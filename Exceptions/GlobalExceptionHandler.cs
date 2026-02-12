@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
-namespace EstudiantesApi.Exceptions
+namespace StudentsApi.Exceptions
 {
     public class GlobalExceptionHandler : IExceptionHandler
     {

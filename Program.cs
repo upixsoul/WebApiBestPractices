@@ -1,9 +1,9 @@
-using EstudiantesApi.Data;
-using EstudiantesApi.Dtos;
-using EstudiantesApi.Exceptions; // our custom exception handlers
-using EstudiantesApi.Models;
-using EstudiantesApi.Services;
-using EstudiantesApi.Validators;
+using StudentsApi.Data;
+using StudentsApi.Dtos;
+using StudentsApi.Exceptions; // our custom exception handlers
+using StudentsApi.Models;
+using StudentsApi.Services;
+using StudentsApi.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Mapster;

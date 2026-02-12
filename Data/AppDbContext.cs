@@ -1,7 +1,7 @@
-﻿using EstudiantesApi.Models;
+﻿using StudentsApi.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace EstudiantesApi.Data
+namespace StudentsApi.Data
 {
     public class AppDbContext : DbContext
     {

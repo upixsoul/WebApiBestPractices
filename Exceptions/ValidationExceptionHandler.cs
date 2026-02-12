@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EstudiantesApi.Exceptions
+namespace StudentsApi.Exceptions
 {
     public class ValidationExceptionHandler : IExceptionHandler
     {

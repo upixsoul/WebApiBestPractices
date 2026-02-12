@@ -1,6 +1,6 @@
-﻿using EstudiantesApi.Dtos;
+﻿using StudentsApi.Dtos;
 
-namespace EstudiantesApi.Services
+namespace StudentsApi.Services
 {
     public interface IStudentService
     {

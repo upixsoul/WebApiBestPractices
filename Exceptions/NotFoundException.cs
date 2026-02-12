@@ -1,4 +1,4 @@
-﻿namespace EstudiantesApi.Exceptions
+﻿namespace StudentsApi.Exceptions
 {
     public class NotFoundException : Exception
     {

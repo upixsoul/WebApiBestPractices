@@ -1,9 +1,9 @@
-﻿using EstudiantesApi.Dtos;
-using EstudiantesApi.Services;
+﻿using StudentsApi.Dtos;
+using StudentsApi.Services;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EstudiantesApi.Controllers
+namespace StudentsApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

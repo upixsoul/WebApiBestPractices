@@ -1,7 +1,7 @@
-﻿using EstudiantesApi.Dtos;
+﻿using StudentsApi.Dtos;
 using FluentValidation;
 
-namespace EstudiantesApi.Validators
+namespace StudentsApi.Validators
 {
     public class CreateStudentValidator : AbstractValidator<CreateStudentDto>
     {

@@ -1,4 +1,4 @@
-﻿namespace EstudiantesApi.Dtos
+﻿namespace StudentsApi.Dtos
 {
     public record PagedResultDto<T>(
         List<T> Items,

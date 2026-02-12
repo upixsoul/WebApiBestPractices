@@ -1,11 +1,11 @@
-﻿using EstudiantesApi.Data;
-using EstudiantesApi.Dtos;
-using EstudiantesApi.Exceptions;
-using EstudiantesApi.Models;
+﻿using StudentsApi.Data;
+using StudentsApi.Dtos;
+using StudentsApi.Exceptions;
+using StudentsApi.Models;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 
-namespace EstudiantesApi.Services
+namespace StudentsApi.Services
 {
     public class StudentService : IStudentService
     {
