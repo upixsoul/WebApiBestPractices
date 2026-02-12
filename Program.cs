@@ -46,6 +46,7 @@ TypeAdapterConfig<Estudiante, EstudianteResponseDto>
 
 // Validadores FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<CreateEstudianteValidator>();
+//es suficiente y funciona perfectamente para registrar todos los validadores que estén en el mismo assembly (ensamblado) que CreateEstudianteValidator.
 
 // Services
 builder.Services.AddScoped<IEstudianteService, EstudianteService>();

@@ -21,6 +21,7 @@ namespace EstudiantesApi.Data
             const int maxRetries = 5;
             int retryCount = 0;
 
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             while (retryCount < maxRetries && !stoppingToken.IsCancellationRequested)
             {
                 try
@@ -106,11 +107,11 @@ namespace EstudiantesApi.Data
                 catch (Exception ex)
                 {
                     retryCount++;
-                    _logger.LogWarning(ex, "Error al ejecutar seed (intento {RetryCount}/{MaxRetries}). Reintentando en 5 segundos...", retryCount, maxRetries);
+                    _logger.LogWarning(ex, $"Error al ejecutar seed (intento {retryCount}/{maxRetries}). Reintentando en 5 segundos...", retryCount, maxRetries);
 
                     if (retryCount >= maxRetries)
                     {
-                        _logger.LogError(ex, "Falló el seed después de {MaxRetries} intentos. La aplicación continuará sin seed.");
+                        _logger.LogError(ex, $"Falló el seed después de {maxRetries} intentos. La aplicación continuará sin seed.");
                         return;
                     }
 
