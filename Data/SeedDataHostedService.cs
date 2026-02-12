@@ -18,9 +18,6 @@ namespace EstudiantesApi.Data
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            // BackgroundService usa ExecuteAsync en lugar de StartAsync
-            // y permite que la app continúe aunque este método falle
-
             const int maxRetries = 5;
             int retryCount = 0;
 
@@ -35,85 +32,70 @@ namespace EstudiantesApi.Data
                     {
                         _logger.LogInformation("Iniciando seed de datos iniciales (intento {RetryCount}/{MaxRetries})...", retryCount + 1, maxRetries);
 
-                        if (retryCount.Equals(0))
+                        // Simulación de error solo en el primer intento (para pruebas)
+                        if (retryCount == 0)
                         {
                             throw new Exception("Simulación de error en el seed para probar la resiliencia. El seed se reintentará automáticamente.");
                         }
 
-                        // Estudiante 1
-                        var e1 = new Estudiante
-                        {
-                            Nombre = "Juan",
-                            Apellido = "Pérez López",
-                            FechaNacimiento = new DateTime(2005, 5, 15)
-                        };
-                        db.Estudiantes.Add(e1);
+                        // Lista de nombres y apellidos comunes
+                        var nombres = new[] { "Juan", "María", "Carlos", "Ana", "Luis", "Sofía", "Miguel", "Laura", "José", "Elena", "Daniel", "Valeria", "Alejandro", "Camila", "Diego", "Isabella", "Fernando", "Gabriela", "Rafael", "Lucía", "Pablo", "Victoria", "Andrés", "Mariana" };
+                        var apellidos = new[] { "Pérez", "González", "Hernández", "Martínez", "López", "García", "Rodríguez", "Sánchez", "Ramírez", "Torres", "Flores", "Vázquez", "Ramos", "Morales", "Ortiz", "Jiménez", "Cruz", "Reyes", "Díaz", "Mendoza", "Castro", "Ruiz", "Gutiérrez", "Mendoza" };
 
-                        // Estudiante 2
-                        var e2 = new Estudiante
-                        {
-                            Nombre = "María",
-                            Apellido = "González Ramírez",
-                            FechaNacimiento = new DateTime(2006, 8, 22)
-                        };
-                        db.Estudiantes.Add(e2);
+                        var estudiantes = new List<Estudiante>();
+                        var calificaciones = new List<Calificacion>();
 
-                        // Estudiante 3
-                        var e3 = new Estudiante
-                        {
-                            Nombre = "Carlos",
-                            Apellido = "Hernández Soto",
-                            FechaNacimiento = new DateTime(2004, 11, 3)
-                        };
-                        db.Estudiantes.Add(e3);
+                        var materias = new[] { "Matemáticas", "Español", "Ciencias", "Historia", "Inglés", "Biología", "Química", "Física", "Educación Física", "Arte", "Música", "Geografía" };
 
-                        // Estudiante 4 (con pocas calificaciones)
-                        var e4 = new Estudiante
+                        for (int i = 0; i < 24; i++)
                         {
-                            Nombre = "Ana",
-                            Apellido = "Martínez Vargas",
-                            FechaNacimiento = new DateTime(2007, 2, 14)
-                        };
-                        db.Estudiantes.Add(e4);
+                            var nombre = nombres[i % nombres.Length];
+                            var apellido = apellidos[i % apellidos.Length] + (i % 3 == 0 ? " " + apellidos[(i + 7) % apellidos.Length] : "");
 
-                        // Guardamos los estudiantes para obtener sus IDs
+                            var estudiante = new Estudiante
+                            {
+                                Nombre = nombre,
+                                Apellido = apellido,
+                                FechaNacimiento = new DateTime(2003 + (i % 6), 1 + (i % 12), 1 + (i % 28))
+                            };
+
+                            estudiantes.Add(estudiante);
+                            db.Estudiantes.Add(estudiante);
+                        }
+
                         await db.SaveChangesAsync(stoppingToken);
 
-                        // Calificaciones para Estudiante 1 (Juan)
-                        db.Calificaciones.AddRange(
-                            new Calificacion { EstudianteId = e1.Id, Materia = "Matemáticas", Nota = 9.8m, Fecha = new DateTime(2025, 6, 10) },
-                            new Calificacion { EstudianteId = e1.Id, Materia = "Español", Nota = 8.5m, Fecha = new DateTime(2025, 5, 20) },
-                            new Calificacion { EstudianteId = e1.Id, Materia = "Ciencias", Nota = 9.2m, Fecha = new DateTime(2025, 7, 5) },
-                            new Calificacion { EstudianteId = e1.Id, Materia = "Historia", Nota = 7.9m, Fecha = new DateTime(2025, 4, 15) }
-                        );
+                        // Asignar calificaciones (variedad: algunos con muchas, otros con pocas)
+                        var random = new Random(42); // semilla fija para reproducibilidad
 
-                        // Calificaciones para Estudiante 2 (María)
-                        db.Calificaciones.AddRange(
-                            new Calificacion { EstudianteId = e2.Id, Materia = "Matemáticas", Nota = 6.5m, Fecha = new DateTime(2025, 6, 12) },
-                            new Calificacion { EstudianteId = e2.Id, Materia = "Inglés", Nota = 9.0m, Fecha = new DateTime(2025, 5, 25) },
-                            new Calificacion { EstudianteId = e2.Id, Materia = "Biología", Nota = 8.7m, Fecha = new DateTime(2025, 7, 8) },
-                            new Calificacion { EstudianteId = e2.Id, Materia = "Educación Física", Nota = 10.0m, Fecha = new DateTime(2025, 6, 1) }
-                        );
+                        foreach (var est in estudiantes)
+                        {
+                            int numCalif = random.Next(0, 7); // 0 a 6 calificaciones por estudiante
 
-                        // Calificaciones para Estudiante 3 (Carlos)
-                        db.Calificaciones.AddRange(
-                            new Calificacion { EstudianteId = e3.Id, Materia = "Matemáticas", Nota = 5.5m, Fecha = new DateTime(2025, 6, 8) },
-                            new Calificacion { EstudianteId = e3.Id, Materia = "Química", Nota = 4.8m, Fecha = new DateTime(2025, 5, 18) },
-                            new Calificacion { EstudianteId = e3.Id, Materia = "Física", Nota = 6.2m, Fecha = new DateTime(2025, 7, 3) }
-                        );
+                            for (int j = 0; j < numCalif; j++)
+                            {
+                                var materia = materias[random.Next(materias.Length)];
+                                var nota = Math.Round((decimal)(random.NextDouble() * 5 + 5), 1); // entre 5.0 y 10.0
+                                var fecha = new DateTime(2025, random.Next(1, 13), random.Next(1, 29));
 
-                        // Calificaciones para Estudiante 4 (Ana) – pocas para variar
-                        db.Calificaciones.AddRange(
-                            new Calificacion { EstudianteId = e4.Id, Materia = "Arte", Nota = 9.5m, Fecha = new DateTime(2025, 6, 5) },
-                            new Calificacion { EstudianteId = e4.Id, Materia = "Música", Nota = 8.0m, Fecha = new DateTime(2025, 5, 30) }
-                        );
+                                calificaciones.Add(new Calificacion
+                                {
+                                    EstudianteId = est.Id,
+                                    Materia = materia,
+                                    Nota = nota,
+                                    Fecha = fecha
+                                });
+                            }
+                        }
 
+                        db.Calificaciones.AddRange(calificaciones);
                         await db.SaveChangesAsync(stoppingToken);
 
                         _logger.LogInformation("Seed completado: {EstudiantesCount} estudiantes y {CalificacionesCount} calificaciones agregadas.",
                             await db.Estudiantes.CountAsync(stoppingToken),
                             await db.Calificaciones.CountAsync(stoppingToken));
-                        return; // ¡Éxito! Salimos del loop
+
+                        return; // Éxito
                     }
                     else
                     {
@@ -129,14 +111,12 @@ namespace EstudiantesApi.Data
                     if (retryCount >= maxRetries)
                     {
                         _logger.LogError(ex, "Falló el seed después de {MaxRetries} intentos. La aplicación continuará sin seed.");
-                        return; // ← ¡Importante! No lanzamos excepción → la app sigue viva
+                        return;
                     }
 
                     await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
                 }
             }
         }
-
-        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }
