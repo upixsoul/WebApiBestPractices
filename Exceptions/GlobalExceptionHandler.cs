@@ -22,7 +22,7 @@ namespace EstudiantesApi.Exceptions
             Exception exception,
             CancellationToken cancellationToken)
         {
-            // Logueamos siempre el error completo (con stack trace en dev)
+            // Log the full exception details every time (including stack trace in development environments)
             _logger.LogError(exception, "Unhandled exception occurred. Path: {Path}", httpContext.Request.Path);
 
             var problemDetails = new ProblemDetails
@@ -36,7 +36,7 @@ namespace EstudiantesApi.Exceptions
                 Instance = httpContext.Request.Path
             };
 
-            // Agregar trace/correlation si usas Activity (opcional pero recomendado)
+            // Consider including trace/correlation identifiers if you're using System.Diagnostics.Activity (highly recommended)
             if (Activity.Current?.Id != null)
             {
                 problemDetails.Extensions["traceId"] = Activity.Current.Id;

@@ -44,7 +44,7 @@ namespace EstudiantesApi.Exceptions
 
             await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
 
-            return true; // Excepción manejada
+            return true; // Handled Exception
         }
     }
 }

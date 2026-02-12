@@ -5,8 +5,8 @@ namespace EstudiantesApi.Data
 {
     public class AppDbContext : DbContext
     {
-        public DbSet<Estudiante> Estudiantes { get; set; }
-        public DbSet<Calificacion> Calificaciones { get; set; }
+        public DbSet<Student> Students { get; set; }
+        public DbSet<Qualification> Qualifications { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -18,10 +18,10 @@ namespace EstudiantesApi.Data
             //error to test
             //throw new Exception("Test Error");
 
-            modelBuilder.Entity<Calificacion>()
-                .HasOne(c => c.Estudiante)
-                .WithMany(e => e.Calificaciones)
-                .HasForeignKey(c => c.EstudianteId);
+            modelBuilder.Entity<Qualification>()
+                .HasOne(c => c.Student)
+                .WithMany(e => e.Qualifications)
+                .HasForeignKey(c => c.StudentId);
         }
     }
 }

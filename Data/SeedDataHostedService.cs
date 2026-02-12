@@ -20,7 +20,6 @@ namespace EstudiantesApi.Data
         {
             const int maxRetries = 5;
             int retryCount = 0;
-
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             while (retryCount < maxRetries && !stoppingToken.IsCancellationRequested)
             {
@@ -29,89 +28,100 @@ namespace EstudiantesApi.Data
                     using var scope = _serviceProvider.CreateScope();
                     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-                    if (db.Database.IsInMemory() || !await db.Estudiantes.AnyAsync(stoppingToken))
+                    // Skip seeding if database already has data (except for in-memory DB, which is always empty on startup)
+                    if (db.Database.IsInMemory() || !await db.Students.AnyAsync(stoppingToken))
                     {
-                        _logger.LogInformation("Iniciando seed de datos iniciales (intento {RetryCount}/{MaxRetries})...", retryCount + 1, maxRetries);
+                        _logger.LogInformation("Starting initial data seeding (attempt {RetryCount}/{MaxRetries})...", retryCount + 1, maxRetries);
 
-                        // Simulación de error solo en el primer intento (para pruebas)
+                        // Simulate failure on first attempt (for testing retry logic)
                         if (retryCount == 0)
                         {
-                            throw new Exception("Simulación de error en el seed para probar la resiliencia. El seed se reintentará automáticamente.");
+                            throw new Exception("Simulated seeding failure to test resilience. Will retry automatically.");
                         }
 
-                        // Lista de nombres y apellidos comunes
-                        var nombres = new[] { "Juan", "María", "Carlos", "Ana", "Luis", "Sofía", "Miguel", "Laura", "José", "Elena", "Daniel", "Valeria", "Alejandro", "Camila", "Diego", "Isabella", "Fernando", "Gabriela", "Rafael", "Lucía", "Pablo", "Victoria", "Andrés", "Mariana" };
-                        var apellidos = new[] { "Pérez", "González", "Hernández", "Martínez", "López", "García", "Rodríguez", "Sánchez", "Ramírez", "Torres", "Flores", "Vázquez", "Ramos", "Morales", "Ortiz", "Jiménez", "Cruz", "Reyes", "Díaz", "Mendoza", "Castro", "Ruiz", "Gutiérrez", "Mendoza" };
+                        // Common first names and last names
+                        var firstNames = new[]
+                        {
+                            "Liam", "Noah", "Oliver", "James", "Elijah", "Mateo", "Theodore", "Henry",
+                            "Lucas", "William", "Benjamin", "Levi", "Jack", "Ezra", "Asher",
+                            "Olivia", "Emma", "Amelia", "Sophia", "Charlotte", "Isabella", "Mia", "Ava", "Evelyn"
+                        };
+                        var lastNames = new[]
+                        {
+                            "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis",
+                            "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson",
+                            "Thomas", "Taylor", "Moore", "Jackson", "Martin", "Lee", "Perez", "Thompson", "White"
+                        };
 
-                        var estudiantes = new List<Estudiante>();
-                        var calificaciones = new List<Calificacion>();
+                        var students = new List<Student>();
+                        var qualifications = new List<Qualification>();
 
-                        var materias = new[] { "Matemáticas", "Español", "Ciencias", "Historia", "Inglés", "Biología", "Química", "Física", "Educación Física", "Arte", "Música", "Geografía" };
+                        var subjects = new[] { "Maths", "Spanish", "Science", "History", "English", "Biology", "Chemistry", "Physics", "Physical Education", "Art", "Music", "Geography" };
 
                         for (int i = 0; i < 24; i++)
                         {
-                            var nombre = nombres[i % nombres.Length];
-                            var apellido = apellidos[i % apellidos.Length] + (i % 3 == 0 ? " " + apellidos[(i + 7) % apellidos.Length] : "");
+                            var firstName = firstNames[i % firstNames.Length];
+                            var lastName = lastNames[i % lastNames.Length];
 
-                            var estudiante = new Estudiante
+                            var student = new Student
                             {
-                                Nombre = nombre,
-                                Apellido = apellido,
-                                FechaNacimiento = new DateTime(2003 + (i % 6), 1 + (i % 12), 1 + (i % 28))
+                                FirstName = firstName,
+                                LastName = lastName,
+                                DateOfBirth = new DateTime(2003 + (i % 6), 1 + (i % 12), 1 + (i % 28))
                             };
 
-                            estudiantes.Add(estudiante);
-                            db.Estudiantes.Add(estudiante);
+                            students.Add(student);
+                            db.Students.Add(student);
                         }
 
                         await db.SaveChangesAsync(stoppingToken);
 
-                        // Asignar calificaciones (variedad: algunos con muchas, otros con pocas)
-                        var random = new Random(42); // semilla fija para reproducibilidad
+                        // Assign grades (some students with many, some with few)
+                        var random = new Random(42); // fixed seed for reproducibility
 
-                        foreach (var est in estudiantes)
+                        foreach (var student in students)
                         {
-                            int numCalif = random.Next(0, 7); // 0 a 6 calificaciones por estudiante
+                            int numQualifications = random.Next(0, 7); // 0 to 6 grades per student
 
-                            for (int j = 0; j < numCalif; j++)
+                            for (int j = 0; j < numQualifications; j++)
                             {
-                                var materia = materias[random.Next(materias.Length)];
-                                var nota = Math.Round((decimal)(random.NextDouble() * 5 + 5), 1); // entre 5.0 y 10.0
-                                var fecha = new DateTime(2025, random.Next(1, 13), random.Next(1, 29));
+                                var subject = subjects[random.Next(subjects.Length)];
+                                var gradeValue = Math.Round((decimal)(random.NextDouble() * 5 + 5), 1); // between 5.0 and 10.0
+                                var date = new DateTime(2025, random.Next(1, 13), random.Next(1, 29));
 
-                                calificaciones.Add(new Calificacion
+                                qualifications.Add(new Qualification()
                                 {
-                                    EstudianteId = est.Id,
-                                    Materia = materia,
-                                    Nota = nota,
-                                    Fecha = fecha
+                                    StudentId = student.Id,
+                                    Subject = subject,
+                                    Grade = gradeValue,
+                                    Date = date
                                 });
                             }
                         }
 
-                        db.Calificaciones.AddRange(calificaciones);
+                        db.Qualifications.AddRange(qualifications);
                         await db.SaveChangesAsync(stoppingToken);
 
-                        _logger.LogInformation("Seed completado: {EstudiantesCount} estudiantes y {CalificacionesCount} calificaciones agregadas.",
-                            await db.Estudiantes.CountAsync(stoppingToken),
-                            await db.Calificaciones.CountAsync(stoppingToken));
+                        _logger.LogInformation("Seeding completed: {StudentCount} students and {GradeCount} grades added.",
+                            await db.Students.CountAsync(stoppingToken),
+                            await db.Qualifications.CountAsync(stoppingToken));
 
-                        return; // Éxito
+                        return; // Success
                     }
                     else
                     {
-                        _logger.LogInformation("La base de datos ya contiene datos. Seed omitido.");
+                        _logger.LogInformation("Database already contains data. Seeding skipped.");
                         return;
                     }
                 }
                 catch (Exception ex)
                 {
                     retryCount++;
-                    _logger.LogWarning(ex, $"Error al ejecutar seed (intento {retryCount}/{maxRetries}). Reintentando en 5 segundos...", retryCount, maxRetries);
+                    _logger.LogWarning(ex, $"Error during seeding (attempt {retryCount}/{maxRetries}). Retrying in 5 seconds...", retryCount, maxRetries);
 
                     if (retryCount >= maxRetries)
                     {
-                        _logger.LogError(ex, $"Falló el seed después de {maxRetries} intentos. La aplicación continuará sin seed.");
+                        _logger.LogError(ex, $"Seeding failed after {maxRetries} attempts. Application will continue without seed data.");
                         return;
                     }
 

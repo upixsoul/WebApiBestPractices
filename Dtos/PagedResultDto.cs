@@ -2,7 +2,7 @@
 {
     public record PagedResultDto<T>(
         List<T> Items,
-        int? NextCursor,          // Id del siguiente elemento (null si no hay más)
+        int? NextCursor,// Id of next element (null if no more)
         int PageSize,
         bool HasMore
     );

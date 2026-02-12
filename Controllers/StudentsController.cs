@@ -7,30 +7,30 @@ namespace EstudiantesApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class EstudiantesController : ControllerBase
+    public class StudentsController : ControllerBase
     {
-        private readonly IEstudianteService _service;
-        private readonly IValidator<CreateEstudianteDto> _validator;
+        private readonly IStudentService _service;
+        private readonly IValidator<CreateStudentDto> _validator;
 
-        public EstudiantesController(IEstudianteService service, IValidator<CreateEstudianteDto> validator)
+        public StudentsController(IStudentService service, IValidator<CreateStudentDto> validator)
         {
             _service = service;
             _validator = validator;
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<EstudianteResponseDto>>> GetAll()
+        public async Task<ActionResult<List<StudentResponseDto>>> GetAll()
             => Ok(await _service.GetAllAsync());
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<EstudianteResponseDto>> GetById(int id)
+        public async Task<ActionResult<StudentResponseDto>> GetById(int id)
         {
             var est = await _service.GetByIdAsync(id);
             return est is null ? NotFound() : Ok(est);
         }
 
         [HttpPost]
-        public async Task<ActionResult<EstudianteResponseDto>> Create([FromBody] CreateEstudianteDto dto)
+        public async Task<ActionResult<StudentResponseDto>> Create([FromBody] CreateStudentDto dto)
         {
             var validation = await _validator.ValidateAsync(dto);
             if (!validation.IsValid) throw new ValidationException(validation.Errors);
@@ -39,19 +39,19 @@ namespace EstudiantesApi.Controllers
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
-        [HttpPost("{id}/calificaciones")]
-        public async Task<IActionResult> AddCalificacion(int id, [FromBody] CreateCalificacionDto dto)
+        [HttpPost("{id}/qualifications")]
+        public async Task<IActionResult> AddQualification(int id, [FromBody] CreateQualificationDto dto)
         {
-            await _service.AddCalificacionAsync(id, dto);
+            await _service.AddQualificationAsync(id, dto);
             return NoContent();
         }
 
-        [HttpGet("{id}/calificaciones")]
-        public async Task<ActionResult<List<CalificacionResponseDto>>> GetCalificaciones(int id)
-            => Ok(await _service.GetCalificacionesAsync(id));
+        [HttpGet("{id}/qualifications")]
+        public async Task<ActionResult<List<QualificationResponseDto>>> GetQualifications(int id)
+            => Ok(await _service.GetQualificationsAsync(id));
 
         [HttpGet("paged")]
-        public async Task<ActionResult<PagedResultDto<EstudianteResponseDto>>> GetPaged(
+        public async Task<ActionResult<PagedResultDto<StudentResponseDto>>> GetPaged(
             [FromQuery] int pageSize = 20,
             [FromQuery] int? cursor = null)
         {
