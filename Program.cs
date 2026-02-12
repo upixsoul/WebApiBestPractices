@@ -73,7 +73,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference(options =>
     {
         options.WithTitle("Students API - .NET 9");
-        options.WithTheme(ScalarTheme.Mars); // modern and clean look
+        options.WithTheme(ScalarTheme.BluePlanet); // modern and clean look
         options.ExpandAllTags();
     });
 }
