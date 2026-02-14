@@ -1,59 +1,52 @@
-using StudentsApi.Data;
-using StudentsApi.Dtos;
-using StudentsApi.Exceptions; // our custom exception handlers
-using StudentsApi.Models;
-using StudentsApi.Services;
-using StudentsApi.Validators;
-using FluentValidation;
+﻿using FluentValidation;
 using FluentValidation.AspNetCore;
-using Mapster;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection; // para keyed services
+using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
 using Serilog;
 using Serilog.Events;
+using StudentsApi.Data;
+using StudentsApi.Dtos;
+using StudentsApi.Exceptions; // our custom exception handlers
+using StudentsApi.Extensions;
+using StudentsApi.Models;
+using StudentsApi.Options;
+using StudentsApi.Services;
+using StudentsApi.Validators;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ==================== Serilog Configuration ====================
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
-    .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .CreateBootstrapLogger();
 
-builder.Host.UseSerilog();
+// ==================== Options Pattern ====================
+builder.Services.Configure<AppOptions>(builder.Configuration.GetSection("App"));
+var appOptions = builder.Configuration.GetSection("App").Get<AppOptions>() ?? new AppOptions();
+
+// Set environment from options
+if (!string.IsNullOrEmpty(appOptions.Environment))
+{
+    builder.Environment.EnvironmentName = appOptions.Environment;
+}
+
+// ==================== Logging (moved to extension) ====================
+builder.AddCustomLogging(appOptions);
 
 // ==================== Services Registration ====================
 builder.Services.AddOpenApi(); // Native OpenAPI support in .NET 9
-
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseInMemoryDatabase("StudentsDb"));
 
-// Seed data on startup
-builder.Services.AddHostedService<SeedDataHostedService>();
-
-// Mapster DI registration
-builder.Services.AddMapster();
-
-// Custom Mapster mappings (after AddMapster())
-TypeAdapterConfig<CreateStudentDto, Student>
-    .NewConfig()
-    .Map(dest => dest.DateOfBirth, src => src.DateOfBirth);
-
-TypeAdapterConfig<Student, StudentResponseDto>
-    .NewConfig()
-    .Map(dest => dest.Id, src => src.Id);
+// Mapster (moved to extension)
+builder.Services.AddCustomMappings();
 
 // Register all FluentValidation validators from the assembly
 // This single line is enough to register every validator in the same assembly as CreateStudentValidator
 builder.Services.AddValidatorsFromAssemblyContaining<CreateStudentValidator>();
-
 builder.Services.AddFluentValidationAutoValidation();
-//builder.Services.AddFluentValidationClientsideAdapters(); // opcional, para validaci�n en frontend si usas JS
 
 // Application services
 builder.Services.AddScoped<IStudentService, StudentService>();
@@ -63,24 +56,27 @@ builder.Services.AddExceptionHandler<ValidationExceptionHandler>();
 builder.Services.AddExceptionHandler<NotFoundExceptionHandler>();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
+// ==================== Keyed Services + Option Pattern para seeding ====================
+// Registramos ambos como keyed services
+builder.Services.AddKeyedSingleton<IHostedService, SeedDataHostedService>("default-seed");
+builder.Services.AddKeyedSingleton<IHostedService, OptionalSeedDataHostedService>("optional-seed");
+
+// Wrapper que elige según la opción (solo se registra UNO como IHostedService real)
+builder.Services.AddSingleton<IHostedService>(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<AppOptions>>().Value;
+    var key = options.SeedingStrategy.ToLower() == "optional" ? "optional-seed" : "default-seed";
+    return sp.GetRequiredKeyedService<IHostedService>(key);
+});
+
 var app = builder.Build();
 
-// ==================== Middleware Pipeline ====================
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-
-    app.MapScalarApiReference(options =>
-    {
-        options.WithTitle("Students API - .NET 9");
-        options.WithTheme(ScalarTheme.BluePlanet); // modern and clean look
-        options.ExpandAllTags();
-    });
-}
+// ==================== Middleware ====================
+app.UseCustomScalar(); // Scalar moved to extension
 
 app.UseSerilogRequestLogging(); // Automatic request/response logging
 
-app.UseExceptionHandler();      // Activates our IExceptionHandler implementations
+app.UseExceptionHandler(); // Activates our IExceptionHandler implementations
 
 app.UseAuthorization();
 
