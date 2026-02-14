@@ -37,6 +37,11 @@ namespace StudentsApi.Data
                             throw new Exception("Simulated seeding failure to test resilience. Will retry automatically.");
                         }
 
+                        if (retryCount == 1)
+                        {
+                            throw new Exception("Simulated seeding failure number 2 to test resilience. Will retry automatically.");
+                        }
+
                         var firstNames = new[]
                         {
                             "Liam", "Noah", "Oliver", "James", "Elijah", "Mateo", "Theodore", "Henry",
