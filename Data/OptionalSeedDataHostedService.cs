@@ -18,9 +18,10 @@ namespace StudentsApi.Data
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            const int maxRetries = 7;                    // ← cambiado a 7
+            const int maxRetries = 7;
             int retryCount = 0;
 
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             while (retryCount < maxRetries && !stoppingToken.IsCancellationRequested)
             {
                 try

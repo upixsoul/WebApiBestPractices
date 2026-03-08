@@ -1,16 +1,11 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection; // para keyed services
 using Microsoft.Extensions.Options;
-using Scalar.AspNetCore;
 using Serilog;
-using Serilog.Events;
 using StudentsApi.Data;
-using StudentsApi.Dtos;
 using StudentsApi.Exceptions; // our custom exception handlers
 using StudentsApi.Extensions;
-using StudentsApi.Models;
 using StudentsApi.Options;
 using StudentsApi.Services;
 using StudentsApi.Validators;
