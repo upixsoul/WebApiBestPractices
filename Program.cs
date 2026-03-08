@@ -41,7 +41,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseInMemoryDatabase("StudentsDb"));
 
 // Mapster (moved to extension)
-builder.Services.AddCustomMappings();
+// builder.Services.AddCustomMappings();
+// AutoMapper (if you prefer it over Mapster)
+ builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // Register all FluentValidation validators from the assembly
 // This single line is enough to register every validator in the same assembly as CreateStudentValidator
